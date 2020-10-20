@@ -1,0 +1,19 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:jdbc-object-store="http://www.mulesoft.org/schema/mule/jdbc-object-store"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+          http://www.mulesoft.org/schema/mule/jdbc-object-store http://www.mulesoft.org/schema/mule/jdbc-object-store/current/mule-jdbc-object-store.xsd">
+
+    <jdbc-object-store:config name="config" configId="configId">
+        <jdbc-object-store:connection requiredParameter="aValue" />
+    </jdbc-object-store:config>
+
+    <flow name="sayHiFlow">
+        <jdbc-object-store:say-hi person="Mariano Gonzalez"/>
+    </flow>
+
+    <flow name="retrieveInfoFlow">
+        <jdbc-object-store:retrieve-info config-ref="config"/>
+    </flow>
+
+</mule>
