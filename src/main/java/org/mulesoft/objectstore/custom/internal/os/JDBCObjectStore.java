@@ -1,26 +1,18 @@
 package org.mulesoft.objectstore.custom.internal.os;
 
-import static java.util.Arrays.asList;
 
-import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.connection.ConnectionProvider;
-import org.mule.runtime.api.i18n.I18nMessage;
 import org.mule.runtime.api.i18n.I18nMessageFactory;
 import org.mule.runtime.api.store.ObjectDoesNotExistException;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.api.store.ObjectStoreException;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.api.store.ObjectStoreNotAvailableException;
-import org.mule.runtime.api.store.ObjectStoreSettings;
-import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.stereotype.Stereotype;
 import org.mulesoft.objectstore.custom.internal.settings.JDBCObjectStoreConnectionSettings;
 import org.mulesoft.objectstore.custom.internal.settings.JDBCObjectStoreSQLSettings;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
-import java.net.ConnectException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,23 +24,19 @@ import java.io.ObjectOutputStream;
 //import org.mule.extension.db.internal.domain.connection.DbConnection;
 
 import java.io.Serializable;
-import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.sql.rowset.serial.SerialBlob;
-import javax.sql.rowset.serial.SerialException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import scala.reflect.internal.Trees.This;
 
 @Stereotype(JDBCStereotype.class)
 public class JDBCObjectStore implements ObjectStore<Serializable> {
@@ -192,7 +180,7 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 
 		try {
 			List<Map<String, Object>> rows = this.queryRunner.query(sb.toString(),
-					new MapListHandler(new BlobAwareProcessor()), new Object[] { this.settings.getObjectStorePartition() });
+					new MapListHandler(new BlobAwareProcessor(this.settings.getTableValueFieldName())), new Object[] { this.settings.getObjectStorePartition() });
 
 			if (rows == null) {
 				throw new Exception();
@@ -252,7 +240,7 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 
 		try {
 			List<Map<String, Object>> row = this.queryRunner.query(sb.toString(),
-					new MapListHandler(new BlobAwareProcessor()), new Object[] { key, this.settings.getObjectStorePartition() });
+					new MapListHandler(new BlobAwareProcessor(this.settings.getTableValueFieldName())), new Object[] { key, this.settings.getObjectStorePartition() });
 
 			if (row == null) {
 				throw new Exception();
@@ -265,10 +253,12 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 			}
 
 		} catch (SQLException se) {
+			//se.printStackTrace();
 			LOGGER.debug("Error while retrieving value from JDBCObjectStore" + se.getMessage());
 			throw new ObjectStoreNotAvailableException(I18nMessageFactory
 			        .createStaticMessage("Could Not Get Key: " + se.getMessage()));			
 		} catch (Exception e) {
+			//e.printStackTrace();
 			LOGGER.debug("Error while retrieving value from JDBCObjectStore" + e.getMessage());
 			throw new ObjectDoesNotExistException(I18nMessageFactory
 			        .createStaticMessage(key + " was not found in Database Object Store."));
@@ -291,10 +281,24 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 		try {
 			switch (this.databaseName) {
 				case "Apache Derby": {
+					LOGGER.debug("About to call store generic.");
 					this.storeGeneric(key, value);
+					break;
 				}
 				case "MySQL": {
+					LOGGER.debug("About to call store msql.");
 					this.storeMySQL(key, value);
+					break;
+				}
+				case "Microsoft SQL Server": {
+					LOGGER.debug("About to call store generic.");
+					this.storeSqlServer(key, value);
+					break;
+				}
+				case "Oracle": {
+					LOGGER.debug("About to call store oracle.");
+					this.storeOracle(key, value);
+					break;
 				}
 			}
 			return;
@@ -308,8 +312,104 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 		}
 	}
 
+	private void storeSqlServer(String key, Serializable value) throws SQLException, IOException, ObjectStoreNotAvailableException {
+
+		LOGGER.debug("In Store Sql Server.  databasename: " + this.databaseName);
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("BEGIN TRY INSERT INTO ")
+			.append(this.settings.getObjectStoreTableName())
+			.append(" (")
+			.append(this.settings.getTableValueFieldName())
+			.append(", ")
+			.append(this.settings.getTableKeyFieldName())
+			.append(", ")
+			.append(this.settings.getTablePartitionFieldName())
+			.append(") values (?, ?, ?); END TRY BEGIN CATCH IF ERROR_NUMBER() IN (2601, 2627) UPDATE ")
+			.append(this.settings.getObjectStoreTableName())
+			.append(" SET ")
+			.append(this.settings.getTableValueFieldName())
+			.append(" = ? WHERE ")
+			.append(this.settings.getTableKeyFieldName())
+			.append(" = ? AND ")
+			.append(this.settings.getTablePartitionFieldName())
+			.append(" = ?; END CATCH");
+	
+		LOGGER.debug("Upsert Statement for " + this.databaseName + ": " + sb.toString());
+
+		Object[] arguments = new Object[6];
+		byte[] data = this.toByteArray(value);
+		arguments[0] = data;
+		arguments[1] = key;
+		arguments[2] = this.settings.getObjectStorePartition();
+		arguments[3] = data;
+		arguments[4] = key;
+		arguments[5] = this.settings.getObjectStorePartition();
+		
+		int reply = Integer.valueOf(this.queryRunner.execute(sb.toString(), arguments));
+
+		LOGGER.debug("Reply from Upsert for Apache Derby Database: " + reply);
+		return;
+		
+	}
+
+	private void storeOracle(String key, Serializable value) throws SQLException, IOException, ObjectStoreNotAvailableException {
+
+		Connection con = null;
+		try {
+			LOGGER.debug("In Store Oracle.  databasename: " + this.databaseName);
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append("begin insert into ")
+				.append(this.settings.getObjectStoreTableName())
+				.append(" (")
+				.append(this.settings.getTableValueFieldName())
+				.append(", ")
+				.append(this.settings.getTableKeyFieldName())
+				.append(", ")
+				.append(this.settings.getTablePartitionFieldName())
+				.append(") values (?, ?, ?); exception when dup_val_on_index then update ")
+				.append(this.settings.getObjectStoreTableName())
+				.append(" set ")
+				.append(this.settings.getTableValueFieldName())
+				.append(" = ? where ")
+				.append(this.settings.getTableKeyFieldName())
+				.append(" = ? and ")
+				.append(this.settings.getTablePartitionFieldName())
+				.append(" = ?; end;");
+	
+			
+			LOGGER.debug("Upsert Statement for " + this.databaseName + ": " + sb.toString());
+	
+			con = this.queryRunner.getDataSource().getConnection();
+			PreparedStatement pstmt = con.prepareStatement(sb.toString());
+			
+			pstmt.setBinaryStream(1, new ByteArrayInputStream(this.toByteArray(value)));
+			pstmt.setString(2,  key);
+			pstmt.setString(3,  this.settings.getObjectStorePartition());
+			pstmt.setBinaryStream(4, new ByteArrayInputStream(this.toByteArray(value)));
+			pstmt.setString(5,  key);
+			pstmt.setString(6,  this.settings.getObjectStorePartition());
+			boolean reply = pstmt.execute();
+	
+			//int reply = Integer.valueOf(this.queryRunner.execute(sb.toString(), arguments));
+	
+			LOGGER.debug("Reply from Upsert for Apache Derby Database: " + reply);
+			return;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SQLException(e.getMessage());
+		} finally {
+			if (con != null) {
+				con.close();
+			}
+		}
+		
+	}
 	
 	private void storeMySQL(String key, Serializable value) throws SQLException, IOException, ObjectStoreNotAvailableException {
+
+		LOGGER.debug("In Store MySQL.  databasename: " + this.databaseName);
 		
 		StringBuffer sb = new StringBuffer();
 		sb.append("insert into ")
@@ -344,6 +444,7 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 	
 	private void storeGeneric(String key, Serializable value) throws SQLException, IOException, ObjectStoreNotAvailableException {
 		
+		LOGGER.debug("In Store Generic.  databasename: " + this.databaseName);
 		StringBuffer sb = new StringBuffer();
 		if (this.contains(key)) {
 			sb.append("update ")
@@ -406,7 +507,7 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 
 		try {
 			List<Map<String, Object>> rows = this.queryRunner.query(sb.toString(),
-					new MapListHandler(new BlobAwareProcessor()), new Object[] { this.settings.getObjectStorePartition() });
+					new MapListHandler(new BlobAwareProcessor(this.settings.getTableValueFieldName())), new Object[] { this.settings.getObjectStorePartition() });
 
 			if (rows == null) {
 				throw new Exception();

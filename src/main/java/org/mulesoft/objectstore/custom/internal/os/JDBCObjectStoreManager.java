@@ -6,7 +6,6 @@
 package org.mulesoft.objectstore.custom.internal.os;
 
 //import org.mule.extension.db.internal.domain.connection.DbConnection;
-import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.api.store.ObjectStoreSettings;

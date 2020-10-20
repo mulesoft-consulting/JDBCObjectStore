@@ -7,7 +7,6 @@ import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.extension.api.annotation.Alias;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -19,8 +18,8 @@ import org.mulesoft.objectstore.custom.internal.settings.JDBCObjectStoreSQLSetti
 import javax.inject.Inject;
 
 @Stereotype(JDBCStoreConnectionStereotype.class)
-@Alias("jdbc-pooled")
-@DisplayName("JDBC Pooled")
+@Alias("jdbc-connection")
+@DisplayName("JDBC Connection")
 public class JDBCObjectStoreManagerProvider implements ConnectionProvider<JDBCObjectStoreManager> {
 
 	@Inject

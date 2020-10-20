@@ -15,6 +15,8 @@ public class BlobAwareProcessor extends BasicRowProcessor {
 	
 	protected static final Logger LOGGER = LoggerFactory.getLogger(BlobAwareProcessor.class);
 	
+	private String valueFieldName;
+	
     @Override
     public Map<String, Object> toMap(ResultSet resultSet) throws SQLException {
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
@@ -26,7 +28,7 @@ public class BlobAwareProcessor extends BasicRowProcessor {
             String columnName = resultSetMetaData.getColumnName(index).toUpperCase();
             LOGGER.debug("Column Type: " + resultSetMetaData.getColumnTypeName(index) + " Field Name: " + columnName);
             Object object = null;
-            if (resultSetMetaData.getColumnTypeName(index).equals("BLOB")) {
+            if (columnName.equals(this.valueFieldName)) {
                 Blob blob = resultSet.getBlob(index);
                 // materialize BLOB as byte[]
                 BlobData data = new BlobData();
@@ -41,4 +43,9 @@ public class BlobAwareProcessor extends BasicRowProcessor {
 
         return map;
     }
+
+	public BlobAwareProcessor(String valueFieldName) {
+		this.valueFieldName = valueFieldName.toUpperCase();
+	}
+
 }
