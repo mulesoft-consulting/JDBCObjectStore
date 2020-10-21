@@ -21,8 +21,6 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-//import org.mule.extension.db.internal.domain.connection.DbConnection;
-
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
