@@ -42,6 +42,8 @@ Ensure the Pre-Reqs as defined above are fulfilled.
 
 **NOTE: Ensure the Object Store Operation(s) use the Object Store defined above in Step 3 by selecting the appropriate Object Store in the Object store drop-down of the Operation in question.
 
+## Sample Project
+A sample project implementing this extension can be found here: [TestJDBCObjectStore](https://github.com/miloos/TestJDBCObjectStore/tree/master/test-jdbc-object-store).
 ## Maven Configuration
 Add this dependency to your mule application pom.xml. Full sample pom file can be found here: [pom.xml](docs/samples/pom.xml).
 
