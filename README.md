@@ -1,7 +1,7 @@
 
 # JDBC Object Store Extension
 
-For Naked Mules (on-prem installations), Mule 4's out of the box Object Store store only supports persistence in-memory across the cluster or on disk. 
+When running Mule 4 naked Mules (on-prem installations), the out of the box Object Store store only supports persistence in-memory across the cluster via Hazelcast or by storing the objects on disk. 
 
 In most cases this is fine, however, there are times where you may wish for the Object Store data to outlast the Mule Runtimes Lifecycle.  This shows up in containerized scenarios where the Mule Runtime(s) are created and destroyed often.
 
@@ -13,8 +13,32 @@ This JDBC Object Store Extension was created to allow storing and retrieving Obj
  2. Your project must import the Spring Module.  This is because the JDBC Object Store Extensions needs a Spring Datasource in order to connect to the database properly.  Documentation on the Spring Module can be found here:  [Spring Module](https://docs.mulesoft.com/spring-module/1.3/).
  3. Your project needs a Spring Datasource.  Documentation on this can be found here: [Spring Based Datasources](https://help.mulesoft.com/s/article/Spring-based-datasources).
 
-...
+## How To
 
+### Step 1:
+Ensure the Pre-Reqs as defined above are fulfilled.
+
+Sample pom.xml with the appropriate includes/dependencies can be found here: [pom.xml](docs/samples/pom.xml).
+
+Sample Spring beans.xml with a sample Spring Datasource can be found here: [beans.xml](docs/samples/beans.xml).
+
+Sample Mule Configuration file can be found here: [test-jdbc-object-store.xml](docs/samples/test-jdbc-object-store.xml).
+
+### Step 2:
+
+ - Add the Object Store Module to your project.
+ - Ensure that you've added the JDBC Object Store Extension to your project either using a dependency in your pom file or by adding it from your Exchange.
+ - Add an ObjectStore Config Global Element.
+ - Configure the Connection drop-down of the ObjectStore Config and select JDBC Connection.  (If JDBC Connection option is not available, then you haven't properly imported the JDB Object Store Extension to your project.)
+ - Configure the JDBC Connection options similar to the following: (ensure they match your Datasource configuration and your database object store table).![ObjectStore Connection Config](docs/images/ObjectStore-Config.png)
+
+### Step 3:
+ - Add an Object store Global Element.  Ensure the Configuration Reference drop-down has selected your ObjectStore Config created in Step 2 above.
+
+### Step 4:
+
+ - Add Object Store Operations to your Mule Flow(s) and Enjoy!
+ - Ensure the Object Store Operation(s) uses the Object Store defined above in Step 3 by selecting the appropriate Object Store in the Object store drop-down of the Operation in question.
 
 ...
 

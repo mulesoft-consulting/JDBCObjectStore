@@ -1,8 +1,9 @@
-/*
- * (c) 2003-2020 MuleSoft, Inc. This software is protected under international copyright law. All use of this software is subject to
- * MuleSoft's Master Subscription Agreement (or other Terms of Service) separately entered into between you and MuleSoft. If such an
- * agreement is not in place, you may not use the software.
+/**
+ * All code herein is provided "AS IS". Developer makes no warranties, 
+ * express or implied, and hereby disclaims all implied warranties, 
+ * including any warranty of merchantability and warranty of fitness for a particular purpose.
  */
+
 package org.mulesoft.objectstore.custom.internal.os;
 
 import org.mule.runtime.extension.api.stereotype.MuleStereotypeDefinition;
