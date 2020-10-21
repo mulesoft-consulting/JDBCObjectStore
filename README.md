@@ -31,6 +31,8 @@ Ensure the Pre-Reqs as defined above are fulfilled.
  - Configure the JDBC Connection options similar to the following: (ensure they match your Datasource configuration and your database object store table. Configuration reference for the JDBC Connection can be found below [here](#jdbc-connection-reference).)
 ![ObjectStore Connection Config](docs/images/ObjectStore-Config.png)
 
+**NOTE: The Test Connection button will not work.  This is a shortcoming of Anypoint Studio not this Extension.
+
 ### Step 3:
  - Add an Object store Global Element.  Ensure the Configuration Reference drop-down has selected your ObjectStore Config created in Step 2 above.
 
@@ -50,3 +52,16 @@ Add this dependency to your mule application pom.xml. Full sample pom file can b
 <classifier>mule-plugin</classifier>
 ```
 ## JDBC Connection Reference
+### Parameters
+|Name  |Type  |Description |Required? |
+|--|--|--|--|
+|Spring DataSource Name  |  String|The Name of the Spring DataSource to Obtain the Database Connection|X|
+| Object Store Partition Name| String|The DB Table Hosting the Key/Value Pairs Needs the Abilty for Multiple Different Object Stores. This Partition Name is Part of the Primary Key to Separate |X|
+|Database Table Name |String | Table Name in the Database used for Storing Key/Value Pairs|X|
+| Key Field Name| String|The Name of the Table Field Holding the 'Keys' of the Key/Value Pairs |X |
+|Value Field Name |String |The Name of the Table Field Holding the 'Values' of the Key/Value Pairs |X |
+| Partition Field Name| String|The Name of the Table Field Holding the Partition Names of the Key/Value Pairs | X|
+**IMPORTANT NOTES**:
+
+ - The ObjectStore Config Reconnection configuration will not be honored.  All connection pool configuration is handled by the Spring Datasource.
+ - The Object Store Configuration contains things like Entry ttl and Max entries.  These configurations are ignored due to the fact that this is a JDBC backed Object Store and persistence is clearly desired by virtue of using this extension. 

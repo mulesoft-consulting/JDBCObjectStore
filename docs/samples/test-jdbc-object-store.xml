@@ -1,41 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:spring="http://www.mulesoft.org/schema/mule/spring" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jdbc-object-store="http://www.mulesoft.org/schema/mule/jdbc-object-store" xmlns:mongodb-object-store="http://www.mulesoft.org/schema/mule/mongodb-object-store" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
-http://www.mulesoft.org/schema/mule/mongodb-object-store http://www.mulesoft.org/schema/mule/mongodb-object-store/current/mule-mongodb-object-store.xsd
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:jdbc-object-store="http://www.mulesoft.org/schema/mule/jdbc-object-store" xmlns:spring="http://www.mulesoft.org/schema/mule/spring" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd
 http://www.mulesoft.org/schema/mule/jdbc-object-store http://www.mulesoft.org/schema/mule/jdbc-object-store/current/mule-jdbc-object-store.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd">
-	<os:object-store name="Object_store" doc:name="Object store" doc:id="babc5112-5476-4d74-8d3d-5dc232d61791" config-ref="ObjectStore_Config"/>
-	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="7974787b-381b-41e3-8259-a49c57634bac" >
-		<jdbc-object-store:jdbc-connection dataSource="OracleDataSource" objectStorePartition="Test Object Store" objectStoreTableName="objectstore" tableKeyFieldName="okey" tableValueFieldName="ovalue" tablePartitionFieldName="opartition" />
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<spring:config name="Spring_Config" doc:name="Spring Config" doc:id="d42b8fa6-9619-429e-b53b-fa4af8e5e5f6" files="beans.xml" />
+	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="7fd57fcd-65e4-486c-b9f5-cbbf6a0d6a20" >
+		<jdbc-object-store:jdbc-connection dataSource="OracleDataSource" objectStorePartition="Test JDBC Object Store Partition" objectStoreTableName="objectstore" tableKeyFieldName="okey" tableValueFieldName="ovalue" tablePartitionFieldName="opartition" />
 	</os:config>
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7abdfb6a-bb73-4527-9967-4b220ba317d4" >
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="78654a6f-fe34-468c-bcec-22107c0f2c18" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<spring:config name="Spring_Config" doc:name="Spring Config" doc:id="b2039031-45cf-45a3-9992-f7aa766b15ff" files="beans.xml" />
-	<os:object-store name="In-Mem-Store" doc:name="Object store" doc:id="7bc80605-cf54-42e9-8af1-30ae3db00c15" />
-	<flow name="Retrieve-Object-Flow" doc:id="c57751c3-2d05-4471-9f83-664fe0e80f33" >
-		<http:listener doc:name="Listener" doc:id="6f2ed510-605f-45fa-8bff-d462ce4890ef" config-ref="HTTP_Listener_config" path="/os/retrieve"/>
-		<os:retrieve doc:name="Retrieve" doc:id="d0ecf183-7157-4c08-95c5-e5cab31e9070" key="#[attributes.queryParams.key]" objectStore="Object_store"/>
-		<ee:transform doc:name="Transform Message" doc:id="b45e56e5-a458-4b37-983f-17ec9bf19aa4" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	value: payload
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-	</flow>
-	<flow name=Store-Object-Flow doc:id="edf55a36-9288-48e6-81bb-900f8dbcabc4" >
-		<http:listener doc:name="Listener" doc:id="d1bb1e32-d489-4a55-84bb-bd1a26dbe7cb" config-ref="HTTP_Listener_config" path="/os/store"/>
-		<ee:transform doc:name="Transform Message" doc:id="9018423a-0bd5-4c12-a71a-18c49168bac4" >
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="cf147b74-8b63-4fad-98c6-0dc3956ff1a4" config-ref="ObjectStore_Config" />
+	<flow name="Store-Object-Flow" doc:id="a427fc83-e0cd-4870-b01f-66412de8fe5b" >
+		<http:listener doc:name="Listener" doc:id="a87f607e-0701-41bf-b8ba-68d0756791dc" config-ref="HTTP_Listener_config" path="/os/store"/>
+		<set-variable value="#[attributes.queryParams.key]" doc:name="Set Variable" doc:id="21595fd7-cb6a-4ace-9fe6-ca677ee64260" variableName="key"/>
+		<ee:transform doc:name="Transform Message" doc:id="e51a7b42-dadf-4099-b778-957c346a4251" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
@@ -43,43 +27,63 @@ output application/java
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<os:store doc:name="Store" doc:id="6419bbcd-5c83-4102-91b6-669fd568acda" key="#[attributes.queryParams.key]" objectStore="Object_store">
-		</os:store>
-		<ee:transform doc:name="Transform Message" doc:id="8c1b7f7f-65cd-4b6c-ba66-b31db1a71384" >
+		<os:store doc:name="Store" doc:id="79c5cb52-764b-4c20-9992-3042862682a2" key="#[vars.key]" objectStore="Object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="0f3d299b-b5b1-4fe6-827e-7d90afdee5c7" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	message: "value stored"
+	message: "Key: " ++ vars.key ++ " stored."
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="Remove-Object-Flow" doc:id="2d1bfed9-4dce-46d3-ba33-6e4fcbcecdc6" >
-		<http:listener doc:name="Listener" doc:id="66ab5f6a-a7d3-4b04-9eab-55a7a9804ade" config-ref="HTTP_Listener_config" path="/os/remove"/>
-		<os:remove doc:name="Remove" doc:id="c1ebc816-0555-4098-b2be-13d69b4eab9b" key="#[attributes.queryParams.key]" objectStore="Object_store"/>
-		<ee:transform doc:name="Transform Message" doc:id="4c24e9bf-c9d2-42e0-ab14-500a0e9f6427" >
+	<flow name="Retrieve-Object-Flow" doc:id="f86ffd45-b30b-4641-808c-d3f10327965e" >
+		<http:listener doc:name="Listener" doc:id="7a8e4075-1b2e-427c-8ffd-b7c7df026bb5" config-ref="HTTP_Listener_config" path="/os/retrieve"/>
+		<set-variable value="#[attributes.queryParams.key]" doc:name="Set Variable" doc:id="5f0201c1-c9ec-4475-906d-9b3e472f5c11" variableName="key"/>
+		<os:retrieve doc:name="Retrieve" doc:id="0354c226-7c6d-4795-a9b9-13a686a879d9" key="#[vars.key]" objectStore="Object_store">
+			<os:default-value ><![CDATA[#["Object with key: " ++ vars.key ++ " not found."]]]></os:default-value>
+		</os:retrieve>
+		<ee:transform doc:name="Transform Message" doc:id="8e780c1d-caa3-431c-ada4-0107c5eb8cfb" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	value: payload
+	object: {
+		key: vars.key,
+		value: payload
+	}
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="Clear-All-Objects-Flow" doc:id="cfec3709-73ce-46da-8c3e-95db759d4886" >
-		<http:listener doc:name="Listener" doc:id="5f36a3ee-16ca-431a-9f15-51b55ee53b36" config-ref="HTTP_Listener_config" path="/os/clear"/>
-		<os:clear doc:name="Clear" doc:id="be1126b9-94ea-485f-87e7-98ee68d1fc45" objectStore="Object_store"/>
-		<ee:transform doc:name="Transform Message" doc:id="aa4ff3ad-2f20-4b6e-be8d-33bf68071b1f" >
+	<flow name="Remove-Object-Flow" doc:id="4177c459-90c1-454e-b420-479f09ec7d92" >
+		<http:listener doc:name="Listener" doc:id="5c5aedcd-6eae-4173-88d5-7abab291426d" config-ref="HTTP_Listener_config" path="/os/remove"/>
+		<set-variable value="#[attributes.queryParams.key]" doc:name="Set Variable" doc:id="be2e63df-829c-4f75-9884-a2fb0cf9ae9e" variableName="key"/>
+		<os:remove doc:name="Remove" doc:id="b4898bce-04b0-4f2c-ba0e-e09a851b9550" key="#[vars.key]" objectStore="Object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="8ea6d6fe-487e-403d-ae0e-2972ca8092ba" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	message: "Cleared Object Store"
+	message: "key: " ++ vars.key ++ " removed."
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Clear-All-Objects-Flow" doc:id="7f86020f-100f-4951-a288-752bbbdea6df" >
+		<http:listener doc:name="Listener" doc:id="5b28c363-29cf-4051-99cd-fc1318f56126" config-ref="HTTP_Listener_config" path="/os/clear"/>
+		<os:clear doc:name="Clear" doc:id="17c439dc-b3d8-46ed-9e4f-9efecd13d688" objectStore="Object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="e5e69d43-bc22-4d22-9237-fc52c6d2efee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Object Store Cleared"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
