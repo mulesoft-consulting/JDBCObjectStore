@@ -298,6 +298,10 @@ public class JDBCObjectStore implements ObjectStore<Serializable> {
 					this.storeOracle(key, value);
 					break;
 				}
+				default: {
+					LOGGER.debug("About to call store generic.");
+					this.storeGeneric(key, value);					
+				}
 			}
 			return;
 
