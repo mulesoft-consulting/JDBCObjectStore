@@ -40,7 +40,7 @@ Ensure the Pre-Reqs as defined above are fulfilled.
 
  - Add Object Store Operations to your Mule Flow(s) and Enjoy!
 
-**NOTE: Ensure the Object Store Operation(s) uses the Object Store defined above in Step 3 by selecting the appropriate Object Store in the Object store drop-down of the Operation in question.)
+**NOTE: Ensure the Object Store Operation(s) use the Object Store defined above in Step 3 by selecting the appropriate Object Store in the Object store drop-down of the Operation in question.
 
 ## Maven Configuration
 Add this dependency to your mule application pom.xml. Full sample pom file can be found here: [pom.xml](docs/samples/pom.xml).
