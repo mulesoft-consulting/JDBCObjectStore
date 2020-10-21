@@ -1,14 +1,14 @@
 {
   "name": "jdbc-object-store",
   "description": "",
-  "version": "1.0.87-SNAPSHOT",
+  "version": "1.0.88-SNAPSHOT",
   "vendor": "Mulesoft",
   "category": "COMMUNITY",
   "xmlDsl": {
     "prefix": "jdbc-object-store",
     "namespace": "http://www.mulesoft.org/schema/mule/jdbc-object-store",
     "schemaLocation": "http://www.mulesoft.org/schema/mule/jdbc-object-store/current/mule-jdbc-object-store.xsd",
-    "schemaVersion": "1.0.87-SNAPSHOT",
+    "schemaVersion": "1.0.88-SNAPSHOT",
     "xsdFileName": "mule-jdbc-object-store.xsd"
   },
   "resources": [],
@@ -607,9 +607,9 @@
               "modelProperties": {}
             }
           ],
-          "name": "jdbc-pooled",
+          "name": "jdbc-connection",
           "displayModel": {
-            "displayName": "JDBC Pooled"
+            "displayName": "JDBC Connection"
           },
           "description": "",
           "modelProperties": {}
@@ -1070,9 +1070,9 @@
           "modelProperties": {}
         }
       ],
-      "name": "jdbc-pooled",
+      "name": "jdbc-connection",
       "displayModel": {
-        "displayName": "JDBC Pooled"
+        "displayName": "JDBC Connection"
       },
       "description": "",
       "modelProperties": {}
