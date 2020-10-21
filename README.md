@@ -63,6 +63,7 @@ Add this dependency to your mule application pom.xml. Full sample pom file can b
 | Key Field Name| String|The Name of the Table Field Holding the 'Keys' of the Key/Value Pairs |X |
 |Value Field Name |String |The Name of the Table Field Holding the 'Values' of the Key/Value Pairs |X |
 | Partition Field Name| String|The Name of the Table Field Holding the Partition Names of the Key/Value Pairs | X|
+
 **IMPORTANT NOTES**:
 
  - The ObjectStore Config Reconnection configuration will not be honored.  All connection pool configuration is handled by the Spring Datasource.
